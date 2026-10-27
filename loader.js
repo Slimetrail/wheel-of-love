@@ -14,7 +14,7 @@ async function boot(k){const m=await getMeta(),out={};
  window.__wolLock=()=>{localStorage.removeItem(KEY);localStorage.removeItem(PW);location.reload()};
  const st=document.createElement("style");st.textContent=out["style.css"];document.head.appendChild(st);
  $("lock").remove();document.body.insertAdjacentHTML("afterbegin",out["body.html"]);
- for(const f of["photos.js","puzzles.js","levels.js","prizes.js","notes.js","game.js","install.js"]){const s=document.createElement("script");s.textContent=out[f];document.body.appendChild(s)}}
+ for(const f of["photos.js","puzzles.js","levels.js","prizes.js","notes.js","sounds.js","game.js","install.js"]){const s=document.createElement("script");s.textContent=out[f];document.body.appendChild(s)}}
 async function derive(pw){const m=await getMeta();const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveBits"]);
  const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt:b64(m.salt),iterations:m.iter,hash:"SHA-256"},base,256);const k=await imp(bits);
  if(!(await check(k)))return null;localStorage.setItem(KEY,JSON.stringify({salt:m.salt,k:toB64(bits)}));localStorage.setItem(PW,pw);return k}
