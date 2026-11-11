@@ -9,6 +9,8 @@ let meta;const getMeta=async()=>meta||(meta=await (await fetch("enc/meta.json",{
 const dec=async(k,u8)=>new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:u8.slice(0,12)},k,u8.slice(12)));
 const imp=raw=>crypto.subtle.importKey("raw",raw,"AES-GCM",false,["decrypt"]);
 async function check(k){const m=await getMeta();try{return new TextDecoder().decode(await dec(k,b64(m.check)))==="wheel-of-love-ok"}catch(e){return false}}
+// t2569u SlimeTrail logo splash: a remembered password unlocks in the background, but the game only appears after the logo
+const afterSplash=fn=>window.SlimeSplash?new Promise((ok,no)=>SlimeSplash.whenDone(()=>{Promise.resolve().then(fn).then(ok,no)})):fn();
 async function boot(k){const m=await getMeta(),out={};
  for(const[n,id]of m.files){const u=new Uint8Array(await (await fetch("enc/"+id+"?v="+m.v)).arrayBuffer());out[n]=new TextDecoder().decode(await dec(k,u))}
  window.__wolLock=()=>{localStorage.removeItem(KEY);localStorage.removeItem(PW);location.reload()};
@@ -25,8 +27,8 @@ async function unlock(){const pw=$("pw").value;if(!pw)return;$("lErr").textConte
 $("lGo").onclick=unlock;$("pw").onkeydown=e=>{if(e.key==="Enter")unlock()};
 (async()=>{try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
  const m=await getMeta(),s=JSON.parse(localStorage.getItem(KEY)||"null");
- if(s&&s.salt===m.salt){const k=await imp(b64(s.k));if(await check(k))return boot(k)}
+ if(s&&s.salt===m.salt){const k=await imp(b64(s.k));if(await check(k))return afterSplash(()=>boot(k))}
  localStorage.removeItem(KEY);const pw=localStorage.getItem(PW);if(!pw)return;
  $("lErr").textContent="Unlocking…";const k=await derive(pw);$("lErr").textContent="";
- if(k)await boot(k);else localStorage.removeItem(PW)}catch(e){}})();
+ if(k)await afterSplash(()=>boot(k));else localStorage.removeItem(PW)}catch(e){}})();
 })();
